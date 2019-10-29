@@ -9,24 +9,30 @@ IF ( NOT EXISTS "${CMAKE_BINARY_DIR}/conan.cmake" )
                   "${CMAKE_BINARY_DIR}/conan.cmake")
 ENDIF ()
 
-INCLUDE ( ${CMAKE_BINARY_DIR}/conan.cmake )
-# localtime 을 대체하기 위한 google c++ cctz
-# BUILD missing 옵션을 추가 할 경우 package 의 build 가 필요하면 build
-# BUILD all 옵션일 경우 매번 빌드하는 문제.
-conan_cmake_run ( REQUIRES cctz/2.2@bincrafters/stable BASIC_SETUP BUILD missing)
-# google c++ unittest framework
-conan_cmake_run ( REQUIRES gtest/1.8.1@bincrafters/stable BASIC_SETUP BUILD missing)
-# conan 을 이용한 라이브러리 빌드 및 설치가 완료된 후
-# 빌드된 라이브러리 경로, 헤더 경로의 참조를 위하여 buildinfo 를 include 한다.
-INCLUDE ( ${CMAKE_BINARY_DIR}/conanbuildinfo.cmake )
+#  conan_cmake_run ( CONANFILE conanfile.py BASIC_SETUP NO_OUTPUT_DIRS BUILD missing BUILD_TYPE Release VERBOSE)
+# BASIC_SETUP 옵션을 줄경우 conan_cmake_run 내부에서 conan_basic_setup 이 실행된다.
+#  conan_basic_setup 의 경우 output dirs 등의 전역 변수에 대한 설정이 실행되므로 
+# BASIC_SETUP 의 경우 별도의 conan_basic_setup 으로 처리한다.
+conan_cmake_run ( CONANFILE conanfile.py BUILD missing BUILD_TYPE Release VERBOSE)
+
+# conan_cmake_run 내부 함수에서 conan_load_buildinfo() 함수를 호출하여 conan build 로 생성되는 
+# 프로젝트 매크로 파일을 자동으로 load 한다.
+# 따라서 별도의 include 가 필요 없다.
+#INCLUDE ( ${CMAKE_BINARY_DIR}/conanbuildinfo.cmake )
+
+# conan 을 이용하여 빌드된 라이브러리의 타겟 매크로 설정
+# ARGUMENTS_NO_OUTPUT_DIRS 
+#   설정을 하지 않을 경우 conan_cmake_run 내부에서 output 경로를 빌드되는 디렉토리 기준으로 전역 설정한다.
+#   따라서 타겟별로 설정된 output 이 적용되지 않으므로, 타겟별로 output 을 별도 설정 한 경우 해당 옵션을 추가해야 한다.
+conan_basic_setup ( TARGETS NO_OUTPUT_DIRS )
 
 
 # 사용 ex
-ADD_LIBRARY ( libgtest STATIC IMPORTED GLOBAL )
+# ADD_LIBRARY ( libgtest STATIC IMPORTED GLOBAL )
 
-# googletest header directory 추가.
-INCLUDE_DIRECTORIES ( ${CONAN_INCLUDE_DIRS_GTEST} )
-# libgtest.a 를 연결 한다.
-SET_TARGET_PROPERTIES( libgtest
-                      PROPERTIES
-                      IMPORTED_LOCATION ${CONAN_LIB_DIRS_GTEST}/libgtestd.a )
+# # googletest header directory 추가.
+# INCLUDE_DIRECTORIES ( ${CONAN_INCLUDE_DIRS_GTEST} )
+# # libgtest.a 를 연결 한다.
+# SET_TARGET_PROPERTIES( libgtest
+#                       PROPERTIES
+#                       IMPORTED_LOCATION ${CONAN_LIB_DIRS_GTEST}/libgtestd.a )
