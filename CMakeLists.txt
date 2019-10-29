@@ -27,12 +27,11 @@ conan_cmake_run ( CONANFILE conanfile.py BUILD missing BUILD_TYPE Release VERBOS
 conan_basic_setup ( TARGETS NO_OUTPUT_DIRS )
 
 
-# 사용 ex
-# ADD_LIBRARY ( libgtest STATIC IMPORTED GLOBAL )
+# conan 을 이용하여 빌드된 라이브러리들의 헤더 디렉토리 전체 참조.
 
-# # googletest header directory 추가.
-# INCLUDE_DIRECTORIES ( ${CONAN_INCLUDE_DIRS_GTEST} )
-# # libgtest.a 를 연결 한다.
-# SET_TARGET_PROPERTIES( libgtest
-#                       PROPERTIES
-#                       IMPORTED_LOCATION ${CONAN_LIB_DIRS_GTEST}/libgtestd.a )
+INCLUDE_DIRECTORIES ( ${CONAN_INCLUDE_DIRS})
+
+# 라이브러리 링크
+
+TARGET_LINK_LIBRARIES ( ${MY_TARGET_NAME}
+                        CONAN_PKG::gtest )
